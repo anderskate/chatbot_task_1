@@ -110,6 +110,8 @@ def wait_for_verification_info(url, api_token, timeout=9, pause=30):
             # then the pause value is set from the function parameters.
             time.sleep(default_pause)
             default_pause = pause
+        except Exception as e:
+            logger.error(e)
 
 
 def main():
@@ -119,7 +121,8 @@ def main():
         format='%(levelname)s:%(filename)s:%(message)s',
         level=logging.DEBUG,
     )
-    logger.addHandler(LogsHandler(level=logging.INFO))
+    logs_handler = LogsHandler(level=logging.INFO)
+    logger.addHandler(logs_handler)
 
     url = f'{DEVMAN_URL}/api/long_polling'
     api_token = os.getenv('DEVMAN_USER_TOKEN')

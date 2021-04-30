@@ -13,6 +13,20 @@ logger = logging.getLogger(__file__)
 DEVMAN_URL = 'https://dvmn.org'
 
 
+class LogsHandler(logging.Handler):
+    """Log handler that redirects log messages to telegram chat."""
+    def __init__(self, level):
+        self.bot_token = os.getenv('TELEGRAM_TOKEN')
+        self.chat_id = os.getenv('TG_CHAT_ID')
+        self.bot = telegram.Bot(token=self.bot_token)
+        super().__init__(level)
+
+    def emit(self, record):
+        """Get formatting log message and send it to telegram chat."""
+        log_entry = self.format(record)
+        self.bot.send_message(chat_id=self.chat_id, text=log_entry)
+
+
 def send_message_to_telegram(attempt_info, bot_token, chat_id):
     """Send a message about a verified attempt to pass the lesson.
 
@@ -81,7 +95,7 @@ def wait_for_verification_info(url, api_token, timeout=9, pause=30):
                     'timestamp_to_request'
                 )
         except requests.exceptions.ReadTimeout:
-            logger.warning(
+            logger.debug(
                 'Request timeout. Try to send request again.')
         except requests.exceptions.ConnectionError:
             logger_msg = cleandoc(
@@ -105,6 +119,7 @@ def main():
         format='%(levelname)s:%(filename)s:%(message)s',
         level=logging.DEBUG,
     )
+    logger.addHandler(LogsHandler(level=logging.INFO))
 
     url = f'{DEVMAN_URL}/api/long_polling'
     api_token = os.getenv('DEVMAN_USER_TOKEN')

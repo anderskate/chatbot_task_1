@@ -17,7 +17,7 @@ class LogsHandler(logging.Handler):
     """Log handler that redirects log messages to telegram chat."""
     def __init__(self, level):
         self.bot_token = os.getenv('TELEGRAM_TOKEN')
-        self.chat_id = os.getenv('TG_CHAT_ID')
+        self.chat_id = os.getenv('TG_ADMIN_CHAT_ID')
         self.bot = telegram.Bot(token=self.bot_token)
         super().__init__(level)
 

@@ -35,7 +35,7 @@ def send_message_to_telegram(attempt_info, bot_token, chat_id):
     """
     lesson_title = attempt_info.get('lesson_title')
     is_negative_result = attempt_info.get('is_negative')
-    lesson_url = 'https://dvmn.org' + attempt_info.get('lesson_url')
+    lesson_url = f'{DEVMAN_URL}{attempt_info.get("lesson_url")}'
 
     if is_negative_result:
         decision_comment = 'К сожалению, в работе нашлись ошибки.'
@@ -80,7 +80,10 @@ def wait_for_verification_info(url, api_token, timeout=9, pause=30):
                 timeout=timeout,
                 params=payload
             )
+            response.raise_for_status()
             response_data = response.json()
+            if 'error' in response_data:
+                raise requests.exceptions.HTTPError(response_data['error'])
             logger.info(f'New data:\n {response_data}')
 
             if response_data.get('status') == 'found':
@@ -110,8 +113,10 @@ def wait_for_verification_info(url, api_token, timeout=9, pause=30):
             # then the pause value is set from the function parameters.
             time.sleep(default_pause)
             default_pause = pause
+        except requests.exceptions.HTTPError as e:
+            logger.warning(e)
         except Exception as e:
-            logger.error(e)
+            logger.exception(e)
 
 
 def main():
